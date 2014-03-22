@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace NinjaEcho
 {
@@ -10,6 +6,9 @@ namespace NinjaEcho
     {
         static void Main(string[] args)
         {
+            Bot bot = new Bot();
+            Task startTask = bot.Start();
+            startTask.Wait();
         }
     }
 }
