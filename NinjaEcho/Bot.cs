@@ -72,7 +72,6 @@ namespace NinjaEcho
 
         private string GetFkey(string html)
         {
-            HtmlNode.ElementsFlags.Remove("form");
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
             return doc.DocumentNode.SelectSingleNode("//input[@name='fkey']").Attributes["value"].Value;
