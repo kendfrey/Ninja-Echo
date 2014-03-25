@@ -28,15 +28,17 @@ namespace NinjaEcho
             StreamReader credentials;
             try
             {
-                credentials = File.OpenText(filename);
+                using (credentials = File.OpenText(filename))
+                {
+                    string email = credentials.ReadLine();
+                    string password = credentials.ReadLine();
+                    return new Credentials(email, password);
+                }
             }
             catch (FileNotFoundException ex)
             {
                 throw new ArgumentException("File does not exist.", "filename", ex);
             }
-            string email = credentials.ReadLine();
-            string password = credentials.ReadLine();
-            return new Credentials(email, password);
         }
     }
 }
