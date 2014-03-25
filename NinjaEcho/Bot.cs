@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 
 namespace NinjaEcho
 {
@@ -44,7 +45,7 @@ namespace NinjaEcho
         private async Task LoginToStackExchange(Credentials credentials)
         {
             Response loginResponse = await Client.Request("https://openid.stackexchange.com/account/login/").Get();
-            string fkey = System.Text.RegularExpressions.Regex.Match(loginResponse.Content, @"[\da-f-]{36}").Value;
+            string fkey = GetFkey(loginResponse.Content);
             string form = string.Format("email={0}&password={1}&fkey={2}", Uri.EscapeDataString(credentials.Email), Uri.EscapeDataString(credentials.Password), fkey);
             await Client.Request("https://openid.stackexchange.com/account/login/submit/").Post(form, "application/x-www-form-urlencoded");
         }
@@ -52,7 +53,7 @@ namespace NinjaEcho
         private async Task LoginToStackOverflow()
         {
             Response loginResponse = await Client.Request("http://stackoverflow.com/users/login/").Get();
-            string fkey = System.Text.RegularExpressions.Regex.Match(loginResponse.Content, @"[\da-f]{32}").Value;
+            string fkey = GetFkey(loginResponse.Content);
             string form = string.Format("openid_identifier={0}&fkey={1}", Uri.EscapeDataString("https://openid.stackexchange.com/"), fkey);
             await Client.Request("http://stackoverflow.com/users/authenticate/").Post(form, "application/x-www-form-urlencoded");
         }
@@ -60,13 +61,21 @@ namespace NinjaEcho
         private async Task LoginToChat()
         {
             Response response = await Client.Request("http://chat.stackoverflow.com/").Get();
-            Fkey = System.Text.RegularExpressions.Regex.Match(response.Content, @"""([\da-f]{32})""").Groups[1].Value;
+            Fkey = GetFkey(response.Content);
         }
 
         private async Task SendMessage(string message, string room)
         {
             string form = string.Format("text={0}&fkey={1}", Uri.EscapeDataString(message), Fkey);
             Response response = await Client.Request(string.Format("http://chat.stackoverflow.com/chats/{0}/messages/new/", room)).Post(form, "application/x-www-form-urlencoded");
+        }
+
+        private string GetFkey(string html)
+        {
+            HtmlNode.ElementsFlags.Remove("form");
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+            return doc.DocumentNode.SelectSingleNode("//input[@name='fkey']").Attributes["value"].Value;
         }
     }
 }
